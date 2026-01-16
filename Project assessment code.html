@@ -1,0 +1,796 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Assessment Questionnaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .accordion-content {
+                display: block !important;
+                max-height: none !important;
+                padding: 1.5rem !important;
+            }
+            .accordion-button svg {
+                display: none !important;
+            }
+            body {
+                font-size: 11pt;
+                background: white;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+            @page {
+                margin: 0.75in;
+            }
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        
+        .accordion-content.active {
+            max-height: 2000px;
+            padding: 1.5rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-positive {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-negative {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-undetermined {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-5xl mx-auto p-6">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Project Assessment Questionnaire</h1>
+            <p class="text-gray-600">Comprehensive project evaluation and health assessment tool</p>
+        </div>
+
+
+        <!-- Master Dashboard -->
+        <div id="masterDashboard" class="bg-white rounded-lg shadow-sm p-6 mb-6 no-print">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Master Dashboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-gray-900" id="totalScore">0</div>
+                    <div class="text-sm text-gray-600">Total Score</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-gray-900" id="maxScore">0</div>
+                    <div class="text-sm text-gray-600">Max Possible</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-gray-900" id="percentScore">0%</div>
+                    <div class="text-sm text-gray-600">Completion Rate</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold" id="overallHealth">
+                        <span class="status-badge status-undetermined">Not Started</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mt-2">Overall Health</div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 mb-6 no-print">
+            <button onclick="generateReport()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+                📋 Copy Report to Clipboard
+            </button>
+            <button onclick="window.print()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+                🖨️ Print to PDF
+            </button>
+        </div>
+
+
+        <!-- Accordion Sections -->
+        <div id="accordionContainer" class="space-y-3">
+            <!-- Sections will be dynamically generated here -->
+        </div>
+    </div>
+
+
+    <script>
+        const sectionsData = {
+            "1.1": {
+                "title": "Project Background",
+                "description": "The purpose of this section is to determine the organization's level of experience with projects of similar size and complexity.",
+                "questions": [
+                    "Will this application replace an existing system?",
+                    "Is this an upgrade to an existing system?",
+                    "Will this be a new application?",
+                    "Has the project scope been defined?",
+                    "Is there a project charter?",
+                    "Is the success of this project important to you?",
+                    "Is the success of this project important to the organization?",
+                    "Has this project been attempted before?",
+                    "Is the organization experienced with projects of this size?",
+                    "Has the organization been successful with projects of this size?",
+                    "Have the project risk been assessed?",
+                    "Are the project risks high?",
+                    "Has there been any capacity planning for this system?"
+                ]
+            },
+            "1.2": {
+                "title": "Type of Project",
+                "description": "The purpose of this section is to determine the level of technological complexity associated with this project.",
+                "questions": [
+                    "Will all or part of this application be custom built?",
+                    "Will all or part of this be an off-the-shelf (OTS) application?",
+                    "Do you plan to make enhancements to the OTS application?",
+                    "Will this system have electronic interfaces with other systems?",
+                    "Will all or part of this application run on a mainframe?",
+                    "Will all or part of this application run on a client-server?",
+                    "Will all or part of this application have an internet component?",
+                    "Will a communication platform be required for the system?",
+                    "Will the existing telecommunication platform support the system?",
+                    "Is there an on-line component to the system?",
+                    "Is there a batch component to the system?",
+                    "Does the organization have a list of standard technologies?",
+                    "Will this project require technology that is new to the organization?",
+                    "Is the organization experienced with the new technology?"
+                ]
+            },
+            "1.3": {
+                "title": "Size of Project",
+                "description": "The purpose of this section is to determine the project's size, excluding costs. Please note that quantifiable data is requested.",
+                "questions": [
+                    "What is the duration (in months) of this project?",
+                    "Will this project take more than two years to complete?",
+                    "Was the project size determined using function points?",
+                    "If yes, how many function points?",
+                    "Has the amount of effort been estimated for the project?",
+                    "If yes, how many person days?",
+                    "How many data elements/attributes required by this system?"
+                ]
+            },
+            "2.1": {
+                "title": "Project Communication",
+                "description": "These questions are intended to determine the mechanism by which information about the project is collected and distributed.",
+                "questions": [
+                    "Is the project organization chart published or posted?",
+                    "Are roles and responsibilities defined?",
+                    "Will there be regularly scheduled team status meetings?",
+                    "Is there a project status report?",
+                    "Is the status report published?",
+                    "Are major project milestones posted anywhere?",
+                    "Will there be regularly scheduled management meetings?",
+                    "Will there be regularly scheduled steering committee meetings?",
+                    "Will there be regularly scheduled change control meetings?",
+                    "Will there be regularly scheduled problem management meetings?",
+                    "Will the clients be represented at most of these meetings?",
+                    "Will there be town hall meetings?",
+                    "Are change control, QA/QC and other processes published?"
+                ]
+            },
+            "2.2": {
+                "title": "Management Capabilities",
+                "description": "The purpose of this section is to determine the project manager's level of experience with similar projects.",
+                "questions": [
+                    "Is there a management team on this project?",
+                    "Will the client be represented on the management team?",
+                    "Is there a project manager on this project?",
+                    "Is the project manager experienced with this type of project?",
+                    "Has the project manager been successful with this type of project?",
+                    "Does the project manager have PMP certification?"
+                ]
+            },
+            "2.3": {
+                "title": "Project Office",
+                "description": "The purpose of this section is to determine the extent to which administrative services are planned for on this project.",
+                "questions": [
+                    "Will administrative services be required on this project?",
+                    "Has the delivery of these services been planned for?",
+                    "Is there a Project Office (PO)?",
+                    "Is the PO represented at most meetings?",
+                    "Does the PO produce the minutes of meetings?",
+                    "Are the roles and responsibilities of the PO well defined?",
+                    "Are the processes for PO interfacing well defined?",
+                    "Does the PO maintain the project plan?",
+                    "Does the PO maintain the project library?",
+                    "Does the PO manage the signoff process?",
+                    "Does the PO manage the problem and change action item list?",
+                    "Does the PO collect time sheets?"
+                ]
+            },
+            "2.4": {
+                "title": "Productivity",
+                "description": "These questions look at the steps being taken to encourage productivity and maintain high team morale throughout the lifecycle of the project.",
+                "questions": [
+                    "Are team members encouraged to voice their concerns?",
+                    "Are team members encouraged to present new ideas?",
+                    "Is there any recognition for outstanding performance?",
+                    "Will there be any social events for the team?",
+                    "Is the project team committed to the success of the project?",
+                    "Are team members recognized for their efforts on this project?",
+                    "Do the team members sit in close proximity to one another?",
+                    "Are employees guaranteed position when the project is finished?"
+                ]
+            },
+            "3.1": {
+                "title": "Client Involvement",
+                "description": "The purpose of this section is to determine the client's level of commitment to the success of the project.",
+                "questions": [
+                    "Is there a project sponsor?",
+                    "Does the client believe in the importance of this project?",
+                    "Does senior management know about this project?",
+                    "Does senior management support this project?",
+                    "Will senior management share the project's outcome?",
+                    "Do the clients have a clear vision of what they want?",
+                    "Do the clients have a realistic level of expectations?",
+                    "Will the client compromise on project scope?",
+                    "Will the client compromise on project approach?",
+                    "Are Subject Mater Experts (SME) assigned to the project?",
+                    "Is there sufficient client participation?"
+                ]
+            },
+            "3.2": {
+                "title": "Accountabilities",
+                "description": "The purpose of this section is to determine degree to which the project management team is involved in the decision-making process.",
+                "questions": [
+                    "Is there a project authority?",
+                    "Is there a management team?",
+                    "Will the management team sign-off on the project plan?",
+                    "Will the management team sign-off on major project deliverables?",
+                    "Will the management team sign-off on the system architecture?",
+                    "Will the management team sign-off on system test results?"
+                ]
+            },
+            "3.3": {
+                "title": "Requirements Definition",
+                "description": "The purpose of this section is to determine the extent of the requirements being defined.",
+                "questions": [
+                    "Have the project objectives been defined?",
+                    "Have the functional requirements been defined?",
+                    "Have the technical requirements been defined?",
+                    "Have the data requirements been defined?",
+                    "Have the edit and validation requirements been defined?",
+                    "Have the online requirements been defined?",
+                    "Have the batch requirements been defined?",
+                    "Have the security requirements been defined?",
+                    "Have the testing requirements been defined?",
+                    "Have the training requirements been defined?",
+                    "Have the resource requirements been defined?",
+                    "Have the documentation requirements been defined?",
+                    "Have the internet/intranet requirements been defined?",
+                    "Have the telecommunication requirements been defined?",
+                    "Has/will the client sign-off on these requirements?"
+                ]
+            },
+            "4.1": {
+                "title": "Project Plan",
+                "description": "The purpose of this section is to determine the level planning for this project.",
+                "questions": [
+                    "Is there a detailed project plan?",
+                    "Is the project behind schedule?",
+                    "Will the project manager be maintaining this plan?",
+                    "Was a template used to build the project plan?",
+                    "Is the project plan based on a structured methodology?",
+                    "Is there any contingency for slippage built into the plan?",
+                    "Does the plan have a Work Breakdown Structure (WBS)?",
+                    "Does the plan identify project phases?",
+                    "Does the plan identify project tasks and activities?",
+                    "Does the plan identify milestones?",
+                    "Does the plan identify dependencies?",
+                    "Is there any provision in the plan for vacation time?",
+                    "Is there any provision in the plan for holidays?"
+                ]
+            },
+            "4.2": {
+                "title": "Estimates",
+                "description": "The purpose of this section is to determine which estimates have been developed and their level of accuracy.",
+                "questions": [
+                    "Was a formal estimating methodology used?",
+                    "Were estimates prepared by someone with relevant experience?",
+                    "Have estimates been developed for the entire project?",
+                    "Are there resource estimates for each phase?",
+                    "Are client resource requirements identified in the plan?",
+                    "Are there costs estimates for each phase?",
+                    "Were resource estimates determined using function points?",
+                    "Were resource estimates determined using effort?",
+                    "Has the amount of effort been estimated for each milestone?",
+                    "Has the duration of each phase been estimated?",
+                    "Will project estimates be revised at the end of each phase?",
+                    "Will a project baseline be established?"
+                ]
+            },
+            "4.3": {
+                "title": "Tracking",
+                "description": "The purpose of this section is to determine how the progress of the project is tracked and monitored.",
+                "questions": [
+                    "Will the project team fill out time sheets?",
+                    "Will all project costs be identified and captured?",
+                    "Will there be project status meetings?",
+                    "Will the progress of milestones be tracked?",
+                    "Will the project plan be updated on regular basis?"
+                ]
+            },
+            "4.4": {
+                "title": "Procurement",
+                "description": "The purpose of this section is to determine extent of and approach to project procurement.",
+                "questions": [
+                    "Have the goods and services requirements been defined?",
+                    "Has the procurement group been consulted?",
+                    "Is there a procurement strategy/plan for the project?",
+                    "Will there be contracted IT resources on the project?",
+                    "Will more than 50% of the project IT resources be contracted?",
+                    "Will there be any per-diem contracts for IT resources?",
+                    "Will peers be participating in the interview process?",
+                    "Will there be any fixed-price contracts for IT resources?",
+                    "Will there be a Request for Proposal (RFP)?",
+                    "Will there be criteria for evaluating proposals?",
+                    "Will the RFP detail system project requirements?",
+                    "Will the RFP detail all project deliverables?",
+                    "Will proposals be point rated?",
+                    "Will the winning proposal be based on lowest cost per point?",
+                    "Will any technology be procured?",
+                    "Does the project plan reflect procurement lead-time requirements?"
+                ]
+            },
+            "4.5": {
+                "title": "Project Team",
+                "description": "The purpose of this section is to determine the composition of the project team and their level of success with projects of similar size and complexity.",
+                "questions": [
+                    "Have project resources been defined?",
+                    "Are roles and responsibilities defined?",
+                    "Has the core team requirements been defined?",
+                    "Has the core team been established?",
+                    "Are any problems expected in building the core team?",
+                    "Is there an organization chart for the project?",
+                    "Will the project have a full time project manager (PM)?",
+                    "Has the PM been successful with similar projects?",
+                    "Will someone be responsible for testing?",
+                    "Will the project have a business architect?",
+                    "Will the project have a technical architect?",
+                    "Will the project have a data architect?",
+                    "Will the project have a component architect?",
+                    "Will someone be responsible for configuration management?",
+                    "Is the project team experienced with similar projects?",
+                    "Will resources to work more than 5% overtime?",
+                    "Is there a reimbursement policy for overtime worked?"
+                ]
+            },
+            "5.1": {
+                "title": "Change Control",
+                "description": "The purpose of this section is to determine the extent and effectiveness of the processes used to manage and control the project scope.",
+                "questions": [
+                    "Is there a change management strategy?",
+                    "Are the change control processes documented?",
+                    "Are the change control processes published?",
+                    "Will each change be identified separately?",
+                    "Will there be a log of all changes?",
+                    "Will each change be assessed?",
+                    "Will each change be costed?",
+                    "Will there be management signed-off before work is started?",
+                    "Will the plan be updated to reflect the approved changes?"
+                ]
+            },
+            "5.2": {
+                "title": "Problem/Issue Management",
+                "description": "The purpose of this section is to determine the extent and effectiveness of the processes used to manage and control problems and issues on the project.",
+                "questions": [
+                    "Is there a problem management strategy?",
+                    "Are the problem management processes documented?",
+                    "Are the problem management processes published?",
+                    "Does the plan reflect the time and effort required to fix problems?",
+                    "Will all problems be identified separately?",
+                    "Will there be a log of all problems?",
+                    "Will each problem be assessed?",
+                    "Is there a completion date for resolving each problem?"
+                ]
+            },
+            "5.3": {
+                "title": "Quality Assurance",
+                "description": "The purpose of this section is to determine the extent and effectiveness of the processes used to ensure the quality of products produced during the project.",
+                "questions": [
+                    "Is there a QA/QC strategy?",
+                    "Are the QA/QC processes documented?",
+                    "Are the QA/QC processes published?",
+                    "Will all project deliverables be subject to a QA/QC review?",
+                    "Will programs/code be subject to QA/QC?",
+                    "Will nomenclature (i.e. screen names) be subject to QA/QC?"
+                ]
+            },
+            "5.4": {
+                "title": "Configuration/Version Management",
+                "description": "The purpose of this section is to determine the effectiveness of the processes used to manage and control versions of software products throughout the project life cycle.",
+                "questions": [
+                    "Is there a configuration management (CM) strategy?",
+                    "Does project plan reflect CM activities?",
+                    "Are resource(s) assigned to CM?",
+                    "Is the test team involved in the scheduling of new releases?",
+                    "Is there a development environment?",
+                    "Is there an integration environment?",
+                    "Is there a system-testing environment?",
+                    "Is there a user acceptance environment?",
+                    "Is there a training environment?",
+                    "Is there a production environment?"
+                ]
+            },
+            "5.5": {
+                "title": "Testing",
+                "description": "The purpose of this section is to determine the extent and effectiveness of the processes used to ensure the system is properly tested and delivers the required functionality.",
+                "questions": [
+                    "Is there a testing strategy?",
+                    "Are the testing activities reflected in the project plan?",
+                    "Is someone responsible for all testing activities?",
+                    "Is the test team part of change management process?",
+                    "Is the client directly involved in the testing?",
+                    "Will detailed test cases be prepared?",
+                    "Will comprehensive test data be created?",
+                    "Will validation tables be populated with existing production data?",
+                    "Will all system interfaces be tested?",
+                    "Does the plan reflect time to conduct system testing?"
+                ]
+            },
+            "6.1": {
+                "title": "Project Methodology",
+                "description": "The purpose of these questions is to determine if a structured methodology is being used on this project and the level of detail that this methodology contains.",
+                "questions": [
+                    "Will an SDLC methodology be used on this project?",
+                    "Is the project team familiar with the SDLC being used?",
+                    "Is the client familiar with the SDLC being used?",
+                    "Does the SDLC identify project phases?",
+                    "Does the SDLC describe phase objectives?",
+                    "Does the SDLC identify tasks and activities by phase?",
+                    "Does the SDLC identify deliverables by phase?",
+                    "Does the SDLC identify resource requirements by phase?",
+                    "Is the SDLC process driven?",
+                    "Is the SDLC data driven?",
+                    "Is the project plan based on the SDLC?"
+                ]
+            },
+            "6.2": {
+                "title": "Automated Tools",
+                "description": "These questions deal with issues relating to the extent that automated tools are used on the project.",
+                "questions": [
+                    "Is project management software being used?",
+                    "Is CASE technology being used?",
+                    "Is code generation software being used?",
+                    "Is testing software being used?",
+                    "Is training software being used?",
+                    "Is time reporting software being used?"
+                ]
+            },
+            "7.1": {
+                "title": "Training",
+                "description": "This section will determine if the organization is prepared to meet the training requirements and objectives.",
+                "questions": [
+                    "Is there a training strategy?",
+                    "Will training be given to the user community?",
+                    "Will the client be involved in preparing the training material?",
+                    "System startup will be less than one month after training?",
+                    "Will there be a 'train trainer' approach?",
+                    "Will Computer Based Training (CBT) software be used?",
+                    "How many clients require training?"
+                ]
+            },
+            "7.2": {
+                "title": "Data Conversion",
+                "description": "This section will determine the organization's level of preparation for data conversion.",
+                "questions": [
+                    "Is there a data conversion phase to this project?",
+                    "Is there a data conversion strategy and plan?",
+                    "Is someone with experience responsible for data conversion?",
+                    "Has the size of the conversion effort been estimated?",
+                    "Is the client directly involved in the conversion?",
+                    "Will there be post-conversion data cleanup?"
+                ]
+            },
+            "7.3": {
+                "title": "Equipment",
+                "description": "This section will determine if the organization is adequately prepared for the installation of new equipment.",
+                "questions": [
+                    "Will new equipment be required for this project?",
+                    "Is procurement aware of these requirements?",
+                    "Will this equipment be delivered to different locations?",
+                    "Is there a rollout strategy for the new equipment?",
+                    "Has the project authority approved this strategy?",
+                    "Is there an equipment contingency plan?"
+                ]
+            },
+            "8.1": {
+                "title": "Performance Measurement",
+                "description": "The purpose of this section is to determine if measurement criteria have been established and whether they are being collected and used to improve project delivery within the organization.",
+                "questions": [
+                    "Have performance measurement criteria been established?",
+                    "Have performance targets been established?",
+                    "Are performance measurements being collected?",
+                    "Are actual measurements compared against targets?",
+                    "Are performance measurements used to improve project delivery?",
+                    "Have performance measurements been used on any project?"
+                ]
+            },
+            "8.2": {
+                "title": "Best Practices",
+                "description": "The purpose of this section is to determine if best practices are being collected and whether they are being used to improve the organization's project delivery practices.",
+                "questions": [
+                    "Has the organization collected any project delivery best practices?",
+                    "Is the collection of best practices an ongoing process?",
+                    "Can you name one instance where a best practice is being used?"
+                ]
+            },
+            "8.3": {
+                "title": "Opportunities",
+                "description": "The purpose of this section is to determine if steps are being taken to identify opportunities to reduce project costs, improve performance or productivity.",
+                "questions": [
+                    "Does the organization identify and document project opportunities?"
+                ]
+            }
+        };
+
+
+        function initializeApp() {
+            const container = document.getElementById('accordionContainer');
+            
+            Object.keys(sectionsData).forEach((sectionId, index) => {
+                const section = sectionsData[sectionId];
+                const isSpecialSection = sectionId === '1.3';
+                
+                const sectionHTML = `
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <button class="accordion-button w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors" onclick="toggleAccordion('${sectionId}')">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-gray-900">${sectionId} - ${section.title}</h3>
+                                <p class="text-sm text-gray-600 mt-1">${section.description}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="status-badge status-undetermined" id="badge-${sectionId}">Not Started</span>
+                                <svg class="w-5 h-5 text-gray-500 transition-transform" id="icon-${sectionId}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </button>
+                        <div class="accordion-content" id="content-${sectionId}">
+                            <div class="space-y-4">
+                                ${section.questions.map((q, qIndex) => {
+                                    if (isSpecialSection) {
+                                        return `
+                                            <div class="border-b border-gray-200 pb-4">
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">${q}</label>
+                                                <input type="text" 
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                       id="${sectionId}-q${qIndex}"
+                                                       placeholder="Enter value...">
+                                            </div>
+                                        `;
+                                    } else {
+                                        return `
+                                            <div class="border-b border-gray-200 pb-4">
+                                                <p class="text-sm font-medium text-gray-700 mb-3">${q}</p>
+                                                <div class="flex gap-6">
+                                                    <label class="flex items-center cursor-pointer">
+                                                        <input type="radio" name="${sectionId}-q${qIndex}" value="yes" onchange="updateScores()" class="w-4 h-4 text-blue-600">
+                                                        <span class="ml-2 text-sm text-gray-700">Yes</span>
+                                                    </label>
+                                                    <label class="flex items-center cursor-pointer">
+                                                        <input type="radio" name="${sectionId}-q${qIndex}" value="no" onchange="updateScores()" class="w-4 h-4 text-red-600">
+                                                        <span class="ml-2 text-sm text-gray-700">No</span>
+                                                    </label>
+                                                    <label class="flex items-center cursor-pointer">
+                                                        <input type="radio" name="${sectionId}-q${qIndex}" value="na" onchange="updateScores()" class="w-4 h-4 text-gray-600">
+                                                        <span class="ml-2 text-sm text-gray-700">N/A</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }
+                                }).join('')}
+                                <div class="pt-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Comments</label>
+                                    <textarea id="comments-${sectionId}" 
+                                              rows="3" 
+                                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                              placeholder="Add any additional comments or notes..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.innerHTML += sectionHTML;
+            });
+            
+            updateScores();
+        }
+
+
+        function toggleAccordion(sectionId) {
+            const content = document.getElementById(`content-${sectionId}`);
+            const icon = document.getElementById(`icon-${sectionId}`);
+            const isActive = content.classList.contains('active');
+            
+            document.querySelectorAll('.accordion-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.accordion-button svg').forEach(el => {
+                el.style.transform = 'rotate(0deg)';
+            });
+            
+            if (!isActive) {
+                content.classList.add('active');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+
+        function calculateSectionScore(sectionId) {
+            const section = sectionsData[sectionId];
+            if (sectionId === '1.3') {
+                return { score: 0, maxScore: 0, status: 'N/A' };
+            }
+            
+            let score = 0;
+            let maxScore = section.questions.length;
+            let answeredCount = 0;
+            
+            section.questions.forEach((q, qIndex) => {
+                const selected = document.querySelector(`input[name="${sectionId}-q${qIndex}"]:checked`);
+                if (selected) {
+                    answeredCount++;
+                    if (selected.value === 'yes') score += 1;
+                    else if (selected.value === 'no') score -= 1;
+                    else if (selected.value === 'na') maxScore -= 1;
+                }
+            });
+            
+            if (answeredCount === 0) {
+                return { score: 0, maxScore: maxScore, status: 'Not Started' };
+            }
+            
+            const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+            let status = 'Undetermined';
+            if (percentage > 50) status = 'Positive';
+            else if (percentage < 0) status = 'Negative';
+            
+            return { score, maxScore, percentage, status };
+        }
+
+
+        function updateScores() {
+            let totalScore = 0;
+            let totalMaxScore = 0;
+            
+            Object.keys(sectionsData).forEach(sectionId => {
+                const result = calculateSectionScore(sectionId);
+                const badge = document.getElementById(`badge-${sectionId}`);
+                
+                if (sectionId !== '1.3') {
+                    totalScore += result.score;
+                    totalMaxScore += result.maxScore;
+                    
+                    badge.textContent = result.status;
+                    badge.className = 'status-badge';
+                    if (result.status === 'Positive') badge.classList.add('status-positive');
+                    else if (result.status === 'Negative') badge.classList.add('status-negative');
+                    else badge.classList.add('status-undetermined');
+                } else {
+                    badge.textContent = 'Info Only';
+                    badge.className = 'status-badge status-undetermined';
+                }
+            });
+            
+            document.getElementById('totalScore').textContent = totalScore;
+            document.getElementById('maxScore').textContent = totalMaxScore;
+            
+            const overallPercentage = totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
+            document.getElementById('percentScore').textContent = overallPercentage.toFixed(1) + '%';
+            
+            const healthBadge = document.getElementById('overallHealth');
+            let healthStatus = 'Undetermined';
+            let healthClass = 'status-undetermined';
+            if (overallPercentage > 50) {
+                healthStatus = 'Positive';
+                healthClass = 'status-positive';
+            } else if (overallPercentage < 0) {
+                healthStatus = 'Negative';
+                healthClass = 'status-negative';
+            }
+            
+            healthBadge.innerHTML = `<span class="status-badge ${healthClass}">${healthStatus}</span>`;
+        }
+
+
+        function generateReport() {
+            let report = '='.repeat(80) + '\n';
+            report += 'PROJECT ASSESSMENT QUESTIONNAIRE - SUMMARY REPORT\n';
+            report += '='.repeat(80) + '\n\n';
+            
+            const totalScore = parseInt(document.getElementById('totalScore').textContent);
+            const maxScore = parseInt(document.getElementById('maxScore').textContent);
+            const percentScore = document.getElementById('percentScore').textContent;
+            const overallHealth = document.getElementById('overallHealth').textContent.trim();
+            
+            report += 'OVERALL PROJECT HEALTH\n';
+            report += '-'.repeat(80) + '\n';
+            report += `Total Score: ${totalScore} / ${maxScore}\n`;
+            report += `Completion Rate: ${percentScore}\n`;
+            report += `Health Status: ${overallHealth}\n\n`;
+            
+            Object.keys(sectionsData).forEach(sectionId => {
+                const section = sectionsData[sectionId];
+                const result = calculateSectionScore(sectionId);
+                
+                report += '='.repeat(80) + '\n';
+                report += `SECTION ${sectionId}: ${section.title.toUpperCase()}\n`;
+                report += '='.repeat(80) + '\n';
+                report += `Description: ${section.description}\n`;
+                
+                if (sectionId !== '1.3') {
+                    report += `Score: ${result.score} / ${result.maxScore}\n`;
+                    report += `Status: ${result.status}\n\n`;
+                } else {
+                    report += `Status: Information Only (Not Scored)\n\n`;
+                }
+                
+                report += 'Responses:\n';
+                report += '-'.repeat(80) + '\n';
+                
+                section.questions.forEach((q, qIndex) => {
+                    report += `${qIndex + 1}. ${q}\n`;
+                    
+                    if (sectionId === '1.3') {
+                        const input = document.getElementById(`${sectionId}-q${qIndex}`);
+                        const value = input ? input.value || 'Not provided' : 'Not provided';
+                        report += `   Answer: ${value}\n\n`;
+                    } else {
+                        const selected = document.querySelector(`input[name="${sectionId}-q${qIndex}"]:checked`);
+                        const answer = selected ? selected.value.toUpperCase() : 'NOT ANSWERED';
+                        report += `   Answer: ${answer}\n\n`;
+                    }
+                });
+                
+                const comments = document.getElementById(`comments-${sectionId}`);
+                if (comments && comments.value.trim()) {
+                    report += 'Comments:\n';
+                    report += '-'.repeat(80) + '\n';
+                    report += comments.value.trim() + '\n\n';
+                }
+            });
+            
+            report += '='.repeat(80) + '\n';
+            report += 'END OF REPORT\n';
+            report += '='.repeat(80) + '\n';
+            
+            navigator.clipboard.writeText(report).then(() => {
+                alert('✅ Report copied to clipboard successfully!');
+            }).catch(() => {
+                alert('❌ Failed to copy report. Please try again.');
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
